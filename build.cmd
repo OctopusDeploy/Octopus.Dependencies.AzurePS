@@ -6,7 +6,7 @@ SET ARGS=%*
 IF [%ARGS%] NEQ [] GOTO ESCAPE_ARGS
 
 :POWERSHELL
-PowerShell.exe -NoProfile -NonInteractive -NoLogo -ExecutionPolicy Unrestricted -Command "& { $ErrorActionPreference = 'Stop'; & '%SCRIPTNAME%' @args; EXIT $LASTEXITCODE }" %ARGS%
+PowerShell.exe -NoProfile -NonInteractive -NoLogo -ExecutionPolicy Unrestricted -Command "& { $ErrorActionPreference = 'Stop'; & '%SCRIPTNAME%' @args; EXIT $LASTEXITCODE }" %ARGS% --settings_skipverification=true
 EXIT /B %ERRORLEVEL%
 
 :ESCAPE_ARGS
