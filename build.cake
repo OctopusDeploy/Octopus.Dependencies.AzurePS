@@ -87,16 +87,16 @@ Task("Unpack-Source-Package")
 });
 
 Task("Pack")
-    .IsDependentOn("Unpack-Source-Package")
+    // .IsDependentOn("Unpack-Source-Package")
     .Does(() =>
 {
     var fileWithoutExtension = Path.GetFileNameWithoutExtension(file);
     Information($"Building Octopus.Dependencies.AzureCmdlets v{nugetVersion}");
-    
+    nugetVersion = "5.4.0";
     NuGetPack("Octopus.Dependencies.AzureCmdlets.nuspec", new NuGetPackSettings {
-        BasePath = Path.Combine(unpackFolder,"Microsoft SDKs","Azure"),
+        BasePath = Path.Combine(unpackFolder),
         OutputDirectory = artifactsDir,
-        ArgumentCustomization = args => args.Append($"-Properties \"version={nugetVersion};subpackagename={fileWithoutExtension}\"")
+        ArgumentCustomization = args => args.Append($"-Properties \"version={nugetVersion}\"")
     });
 });
 
@@ -129,7 +129,7 @@ Task("FullChain")
     .IsDependentOn("Restore-Source-Package")
     .IsDependentOn("Unpack-Source-Package")
     .IsDependentOn("Pack")
-    //.IsDependentOn("Publish")
+    .IsDependentOn("Publish")
     .IsDependentOn("CopyToLocalPackages");
 
 Task("Default").IsDependentOn("FullChain");
