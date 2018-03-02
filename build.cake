@@ -128,8 +128,8 @@ Task("FullChain")
     .IsDependentOn("Clean")
     .IsDependentOn("Restore-Source-Package")
     .IsDependentOn("Unpack-Source-Package")
-    .IsDependentOn("Pack");
-    .IsDependentOn("Publish")
+    .IsDependentOn("Pack")
+    //.IsDependentOn("Publish")
     .IsDependentOn("CopyToLocalPackages");
 
 Task("Default").IsDependentOn("FullChain");
