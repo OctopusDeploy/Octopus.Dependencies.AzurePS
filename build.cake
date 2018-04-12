@@ -48,24 +48,33 @@ Teardown(context =>
 Task("Clean")
     .Does(() =>
 {
-    CleanDirectory(buildDir);
     CleanDirectory(unpackFolder);
+    CleanDirectory(buildDir);
     CleanDirectory(artifactsDir);
 });
+
+// Task("Restore-Source-Package")
+//     .IsDependentOn("Clean")
+//     .Does(() => 
+// {
+//     var releaseUrl = $"https://api.github.com/repos/Azure/azure-powershell/releases/latest";
+//     Information($"Getting {releaseUrl}");
+//     var releaseJson = HttpGet(releaseUrl);
+//     JObject jo = JObject.Parse(releaseJson);
+//     var packageDownloadUrl = jo["assets"].Where(x=>x.Value<string>("name").ToString().EndsWith("msi")).Select(x => x.Value<string>("browser_download_url")).First();
+//     nugetVersion = jo["name"].ToString();
+//     var outputPath = File($"{buildDir}/{file}");
+//     Information($"Downloading {packageDownloadUrl}");
+//     DownloadFile(packageDownloadUrl, outputPath); 
+// });
 
 Task("Restore-Source-Package")
     .IsDependentOn("Clean")
     .Does(() => 
 {
-    var releaseUrl = $"https://api.github.com/repos/Azure/azure-powershell/releases/latest";
-    Information($"Getting {releaseUrl}");
-    var releaseJson = HttpGet(releaseUrl);
-    JObject jo = JObject.Parse(releaseJson);
-    var packageDownloadUrl = jo["assets"].Where(x=>x.Value<string>("name").ToString().EndsWith("msi")).Select(x => x.Value<string>("browser_download_url")).First();
-    nugetVersion = jo["name"].ToString();
     var outputPath = File($"{buildDir}/{file}");
-    Information($"Downloading {packageDownloadUrl}");
-    DownloadFile(packageDownloadUrl, outputPath); 
+    nugetVersion = "5.7.0";
+    CopyFileToDirectory(@"C:\temp\AzureCmdlets.msi", buildDir);
 });
 
 Task("Unpack-Source-Package")
@@ -87,12 +96,11 @@ Task("Unpack-Source-Package")
 });
 
 Task("Pack")
-    // .IsDependentOn("Unpack-Source-Package")
+    .IsDependentOn("Unpack-Source-Package")
     .Does(() =>
 {
     var fileWithoutExtension = Path.GetFileNameWithoutExtension(file);
     Information($"Building Octopus.Dependencies.AzureCmdlets v{nugetVersion}");
-    nugetVersion = "5.4.0";
     NuGetPack("Octopus.Dependencies.AzureCmdlets.nuspec", new NuGetPackSettings {
         BasePath = Path.Combine(unpackFolder),
         OutputDirectory = artifactsDir,

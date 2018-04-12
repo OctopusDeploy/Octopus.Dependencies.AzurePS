@@ -15,10 +15,10 @@
     <iconUrl>http://i.octopusdeploy.com/resources/Avatar3_360.png</iconUrl>
     <tags>automation deployment</tags>
     <contentFiles>
-        <files include=".\Microsoft SDKS\Azure\**\" buildAction="None" copyToOutput="false" />
+        <files include=".\WindowsPowerShell\Modules\**\" buildAction="None" copyToOutput="false" />
     </contentFiles>
   </metadata>
   <files>
-    <file src=".\Microsoft SDKs\Azure\Powershell\**\" target="Powershell" />
+    <file src=".\WindowsPowerShell\Modules\**\" target="Powershell" />
   </files>
 </package>
