@@ -53,28 +53,19 @@ Task("Clean")
     CleanDirectory(artifactsDir);
 });
 
-// Task("Restore-Source-Package")
-//     .IsDependentOn("Clean")
-//     .Does(() => 
-// {
-//     var releaseUrl = $"https://api.github.com/repos/Azure/azure-powershell/releases/latest";
-//     Information($"Getting {releaseUrl}");
-//     var releaseJson = HttpGet(releaseUrl);
-//     JObject jo = JObject.Parse(releaseJson);
-//     var packageDownloadUrl = jo["assets"].Where(x=>x.Value<string>("name").ToString().EndsWith("msi")).Select(x => x.Value<string>("browser_download_url")).First();
-//     nugetVersion = jo["name"].ToString();
-//     var outputPath = File($"{buildDir}/{file}");
-//     Information($"Downloading {packageDownloadUrl}");
-//     DownloadFile(packageDownloadUrl, outputPath); 
-// });
-
 Task("Restore-Source-Package")
     .IsDependentOn("Clean")
     .Does(() => 
 {
+    var releaseUrl = $"https://api.github.com/repos/Azure/azure-powershell/releases/latest";
+    Information($"Getting {releaseUrl}");
+    var releaseJson = HttpGet(releaseUrl);
+    JObject jo = JObject.Parse(releaseJson);
+    var packageDownloadUrl = jo["assets"].Where(x=>x.Value<string>("name").ToString().EndsWith("msi")).Select(x => x.Value<string>("browser_download_url")).First();
+    nugetVersion = jo["name"].ToString();
     var outputPath = File($"{buildDir}/{file}");
-    nugetVersion = "5.7.0";
-    CopyFileToDirectory(@"C:\temp\AzureCmdlets.msi", buildDir);
+    Information($"Downloading {packageDownloadUrl}");
+    DownloadFile(packageDownloadUrl, outputPath); 
 });
 
 Task("Unpack-Source-Package")
