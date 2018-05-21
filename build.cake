@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 //////////////////////////////////////////////////////////////////////
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
+var package = Argument("package", string.Empty);
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBAL VARIABLES
@@ -57,12 +58,18 @@ Task("Restore-Source-Package")
     .IsDependentOn("Clean")
     .Does(() => 
 {
-    var releaseUrl = $"https://api.github.com/repos/Azure/azure-powershell/releases/latest";
+    var releaseUrl = $"https://api.github.com/repos/Azure/azure-powershell/releases";
     Information($"Getting {releaseUrl}");
     var releaseJson = HttpGet(releaseUrl);
-    JObject jo = JObject.Parse(releaseJson);
-    var packageDownloadUrl = jo["assets"].Where(x=>x.Value<string>("name").ToString().EndsWith("msi")).Select(x => x.Value<string>("browser_download_url")).First();
-    nugetVersion = jo["name"].ToString();
+    JArray releases = JArray.Parse(releaseJson);
+    var release =  (from r in releases.Children()
+		            let assets = r["assets"]
+		            where assets.Any(x => x.Value<string>("name").EndsWith("msi"))
+                    && (package == string.Empty || package == "latest" ? true : r["name"].ToString() == package)
+		            && r["prerelease"].Value<bool>() == false
+		            select new { Name = r["name"], Url = assets.First()["browser_download_url"]}).First();
+    var packageDownloadUrl = release.Url.ToString();
+    nugetVersion = release.Name.ToString();
     var outputPath = File($"{buildDir}/{file}");
     Information($"Downloading {packageDownloadUrl}");
     DownloadFile(packageDownloadUrl, outputPath); 
