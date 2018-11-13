@@ -4,8 +4,8 @@
     <id>Octopus.Dependencies.AzureCmdlets</id>
     <title>Octopus Azure Powershell Cmdlets</title>
     <version>$version$</version>
-    <authors>Octopus Deploy</authors>
-    <owners>Octopus Deploy</owners>
+    <authors>Octopus Deploy, Microsoft</authors>
+    <owners>Octopus Deploy, Microsoft</owners>
     <summary>Nuget package of Azure Powershell Cmdlets</summary>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>The assemblies needed to run Azure commandlets</description>
