@@ -34,7 +34,7 @@ var nugetPackageFile = string.Empty;
 ///////////////////////////////////////////////////////////////////////////////
 Setup(context =>
 {
-    
+
 });
 
 Teardown(context =>
@@ -56,7 +56,7 @@ Task("Clean")
 
 Task("Restore-Source-Package")
     .IsDependentOn("Clean")
-    .Does(() => 
+    .Does(() =>
 {
     var releaseUrl = $"https://api.github.com/repos/Azure/azure-powershell/releases";
     Information($"Getting {releaseUrl}");
@@ -64,7 +64,7 @@ Task("Restore-Source-Package")
     JArray releases = JArray.Parse(releaseJson);
     var release =  (from r in releases.Children()
 		            let assets = r["assets"]
-		            where assets.Any(x => x.Value<string>("name").EndsWith("msi"))
+		            where assets.Any(x => x.Value<string>("name").EndsWith("msi") && x.Value<string>("name").StartsWith("Azure-Cmdlets"))
                     && (package == string.Empty || package == "latest" ? true : r["name"].ToString() == package)
 		            && r["prerelease"].Value<bool>() == false
 		            select new { Name = r["name"], Url = assets.First()["browser_download_url"]}).First();
@@ -72,18 +72,18 @@ Task("Restore-Source-Package")
     nugetVersion = release.Name.ToString();
     var outputPath = File($"{buildDir}/{file}");
     Information($"Downloading {packageDownloadUrl}");
-    DownloadFile(packageDownloadUrl, outputPath); 
+    DownloadFile(packageDownloadUrl, outputPath);
 });
 
 Task("Unpack-Source-Package")
     .IsDependentOn("Restore-Source-Package")
     .IsDependentOn("Clean")
-    .Does(() => 
+    .Does(() =>
 {
     var sourcePackage = file;
-    
+
     Information($"Unpacking {sourcePackage}");
-    
+
     var processArgumentBuilder = new ProcessArgumentBuilder();
     processArgumentBuilder.Append($"/a {sourcePackage}");
     processArgumentBuilder.Append("/qn");
@@ -109,7 +109,7 @@ Task("Pack")
 Task("Publish")
     .WithCriteria(BuildSystem.IsRunningOnTeamCity)
     .IsDependentOn("Pack")
-    .Does(() => 
+    .Does(() =>
 {
     NuGetPush($"{artifactsDir}/Octopus.Dependencies.AzureCmdlets.{nugetVersion}.nupkg", new NuGetPushSettings {
         Source = "https://f.feedz.io/octopus-deploy/dependencies/nuget",
@@ -120,7 +120,7 @@ Task("Publish")
 Task("CopyToLocalPackages")
     .WithCriteria(BuildSystem.IsLocalBuild)
     .IsDependentOn("Pack")
-    .Does(() => 
+    .Does(() =>
 {
     CreateDirectory(localPackagesDir);
     CopyFileToDirectory(Path.Combine(artifactsDir, $"Octopus.Dependencies.AzureCmdlets.{nugetVersion}.nupkg"), localPackagesDir);
