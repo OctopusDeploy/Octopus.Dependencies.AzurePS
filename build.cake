@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////////////////
 // TOOLS
 //////////////////////////////////////////////////////////////////////
-#tool "nuget:?package=Newtonsoft.Json"
-#addin "Cake.Http"
+#tool nuget:?package=Newtonsoft.Json&version=13.0.1
+#addin nuget:?package=Cake.Http&version=1.3.0
 
 using Path = System.IO.Path;
 using IO = System.IO;
@@ -25,7 +25,7 @@ var buildDir = @".\build";
 var unpackFolder = Path.Combine(buildDir, "temp");
 var unpackFolderFullPath = Path.GetFullPath(unpackFolder);
 var artifactsDir = @".\artifacts";
-var file = "AzureCmdlets.msi";
+var file = "AzCmdlets.msi";
 var nugetVersion = string.Empty;
 var nugetPackageFile = string.Empty;
 
@@ -64,12 +64,14 @@ Task("Restore-Source-Package")
     JArray releases = JArray.Parse(releaseJson);
     var release =  (from r in releases.Children()
 		            let assets = r["assets"]
-		            where assets.Any(x => x.Value<string>("name").EndsWith("msi") && x.Value<string>("name").StartsWith("Azure-Cmdlets"))
+		            where assets.Any(x => x.Value<string>("name").EndsWith("msi") && x.Value<string>("name").StartsWith("Az-Cmdlets"))
                     && (package == string.Empty || package == "latest" ? true : r["name"].ToString() == package)
 		            && r["prerelease"].Value<bool>() == false
 		            select new { Name = r["name"], Url = assets.First()["browser_download_url"]}).First();
     var packageDownloadUrl = release.Url.ToString();
-    nugetVersion = release.Name.ToString();
+    var releaseName = release.Name.ToString();
+    var azReleasePrefix = "Az ";
+    nugetVersion = releaseName.Substring(azReleasePrefix.Length);
     var outputPath = File($"{buildDir}/{file}");
     Information($"Downloading {packageDownloadUrl}");
     DownloadFile(packageDownloadUrl, outputPath);
